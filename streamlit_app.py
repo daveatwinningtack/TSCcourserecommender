@@ -63,19 +63,25 @@ def is_corridor(edge: Edge) -> bool:
 CORRIDORS: List[Edge] = [
     Edge("H->N corridor",  "H",  "N",  ("H","TSC3","TSC1","N")),
     Edge("N->H corridor",  "N",  "H",  ("N","TSC1","TSC3","H")),
+    
     Edge("D->H corridor",  "D",  "H",  ("D","TSC3","H")),
     Edge("H->D corridor",  "H",  "D",  ("H","TSC3","D")),
+    
+    Edge("D->N corridor",  "D",  "N",  ("D","TSC1","N")),
+    Edge("N->D corridor",  "N",  "D",  ("N","TSC1","D")),
+    
+    Edge("WF->N corridor",  "WF",  "N",  ("WF","TSC1","N")),
+    Edge("N->WF corridor",  "N",  "WF",  ("N","TSC1","WF")),
+    
+    Edge("IF->N corridor",  "IF",  "N",  ("IF","TSC1","N")),
+    Edge("N->IF corridor",  "N",  "IF",  ("N","TSC1","IF")),
+    
     Edge("H->IF corridor", "H",  "IF", ("H","TSC3","IF")),
     Edge("IF->H corridor", "IF", "H",  ("IF","TSC3","H")),
 ]
 
 # Simple edges (single hop only — IMPORTANT: no corridor-interior hops here)
 SIMPLE_EDGES: List[Edge] = [
-    Edge("N->TSC1",  "N",    "TSC1", ("N","TSC1")),
-    Edge("TSC1->D",  "TSC1", "D",    ("TSC1","D")),
-    Edge("TSC1->IF", "TSC1", "IF",   ("TSC1","IF")),
-    Edge("TSC1->WF", "TSC1", "WF",   ("TSC1","WF")),
-    Edge("TSC1->H",  "TSC1", "H",    ("TSC1","H")),
 
     Edge("IF->D",    "IF",   "D",    ("IF","D")),
     Edge("D->IF",    "D",    "IF",   ("D","IF")),
@@ -89,10 +95,6 @@ SIMPLE_EDGES: List[Edge] = [
     Edge("WF->H",    "WF",   "H",    ("WF","H")),
     Edge("H->WF",    "H",    "WF",   ("H","WF")),
 
-    Edge("TSC1->N",  "TSC1", "N",    ("TSC1","N")),
-    Edge("D->TSC1",  "D",    "TSC1", ("D","TSC1")),
-    Edge("IF->TSC1", "IF",   "TSC1", ("IF","TSC1")),
-    Edge("WF->TSC1", "WF",   "TSC1", ("WF","TSC1")),
 ]
 
 ALL_EDGES: List[Edge] = SIMPLE_EDGES + CORRIDORS
@@ -243,7 +245,7 @@ def nodes_expanded(edges: List[Edge], start="N") -> List[str]:
 # -----------------------------
 st.set_page_config(page_title="TSC Course Generator", layout="centered")
 st.title("TSC Fixed-Marks Course Generator")
-st.caption("Inputs: wind direction (from) + wind speed. Output: recommended course under 3.5 hours (pursuit-friendly).")
+st.caption("Inputs: wind direction (from) + wind speed. Output: recommended course under 3.5 hours, 2-2.5hour target (pursuit-friendly).")
 
 col1, col2, col3 = st.columns([1,1,1])
 with col1:
