@@ -186,7 +186,7 @@ def recommend_courses(
     wind_from_deg: float,
     wind_speed_kt: float,
     hard_cap_hr: float = 3.5,
-    target_window: Tuple[float, float] = (2.75, 3.25),
+    target_window: Tuple[float, float] = (2.00, 2.50),
     min_edges: int = 4,
     max_edges: int = 7,
     top_k: int = 10
