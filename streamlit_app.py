@@ -118,10 +118,10 @@ def leg_type_and_speed(bearing_deg: float, wind_from_deg: float, wind_speed_kt: 
     twa = smallest_angle_deg(bearing_deg - wind_to)  # 0 downwind, 180 upwind
 
     if twa > 120.0:
-        return "UPWIND-ish", max(1.0, vmg * 1.00)
+        return "UPWIND-ish", max(1.0, vmg * 0.8)
     if twa < 60.0:
-        return "DOWNWIND-ish", max(1.0, vmg * 0.95)
-    return "REACH", max(1.0, vmg * 1.15)
+        return "DOWNWIND-ish", max(1.0, vmg * 0.90)
+    return "REACH", max(1.0, vmg * 1.25)
 
 def edge_time(edge: Edge, wind_from_deg: float, wind_speed_kt: float):
     total_dist = 0.0
@@ -187,7 +187,7 @@ def recommend_courses(
     wind_speed_kt: float,
     hard_cap_hr: float = 3.0,
     target_window: Tuple[float, float] = (2.00, 2.50),
-    min_edges: int = 4,
+    min_edges: int = 2,
     max_edges: int = 7,
     top_k: int = 10
 ) -> List[Candidate]:
