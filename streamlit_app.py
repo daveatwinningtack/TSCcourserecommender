@@ -107,7 +107,7 @@ for e in ALL_EDGES:
 # -----------------------------
 def planning_vmg_knots(wind_speed_kt: float) -> float:
     if wind_speed_kt < 5.0:
-        return 2.2
+        return 2.7
     if wind_speed_kt < 8.0:
         return 3.3
     return 4.3
