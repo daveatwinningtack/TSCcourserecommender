@@ -254,11 +254,6 @@ st.set_page_config(page_title="TSC Course Generator", layout="centered")
 st.title("TSC Fixed-Marks Course Generator")
 st.caption("Inputs: wind direction (from) + wind speed. Output: recommended course under 3.5 hours, 2-2.5hour target (pursuit-friendly).")
 
-col1, col2 = st.columns([1,1])
-with col1:
-    wind_speed = st.number_input("Wind speed (kt)", min_value=0.0, max_value=60.0, value=15.0, step=0.5)
-with col2:
-    top_n = st.number_input("Show top N", min_value=1, max_value=15, value=5, step=1)
 
 import streamlit as st
 
@@ -296,7 +291,7 @@ def on_deg_change():
     st.session_state.wind_dir = nearest_compass_point(st.session_state.wind_deg)
 
 # --- UI ---
-col1, col2 = st.columns([1, 1])
+col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
 
 with col1:
     st.selectbox(
@@ -317,6 +312,12 @@ with col2:
         on_change=on_deg_change,
         help="Enter a number (0–359.9). Updates the compass selection to the nearest point."
     )
+
+with col3:
+    wind_speed = st.number_input("Wind speed (kt)", min_value=0.0, max_value=60.0, value=15.0, step=0.5)
+
+with col4:
+    top_n = st.number_input("Show top N Courses", min_value=1, max_value=15, value=5, step=1)
 
 wind_direction_degrees = st.session_state.wind_deg
 st.caption(f"Using wind direction: **{wind_direction_degrees:.1f}°** ({nearest_compass_point(wind_direction_degrees)})")
