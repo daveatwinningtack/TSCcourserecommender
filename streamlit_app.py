@@ -211,7 +211,7 @@ def recommend_courses(
         if t_hr > hard_cap_hr or len(edges) > max_edges:
             return
 
-        if current == "N" and len(edges) >= min_edges:
+        if current == "BB" and len(edges) >= min_edges:
             lo, hi = target_window
             center = (lo + hi) / 2.0
             bonus = 10.0 if (lo <= t_hr <= hi) else -abs(t_hr - center) * 6.0
@@ -220,17 +220,17 @@ def recommend_courses(
         prev = edges[-1] if edges else None
         for e in ADJ.get(current, []):
             # avoid trivial early closure
-            if len(edges) < 2 and e.end == "N":
+            if len(edges) < 2 and e.end == "BB":
                 continue
 
             edist, etime, _ = edge_time(e, wind_from_deg, wind_speed_kt)
             escore = edge_score(e, wind_from_deg, wind_speed_kt, prev)
             dfs(e.end, edges + [e], t_hr + etime, d_nm + edist, score + escore)
 
-    dfs("N", [], 0.0, 0.0, 0.0)
+    dfs("BB", [], 0.0, 0.0, 0.0)
     return best
 
-def nodes_macro(edges: List[Edge], start="N") -> List[str]:
+def nodes_macro(edges: List[Edge], start="BB") -> List[str]:
     out = [start]
     cur = start
     for e in edges:
@@ -238,7 +238,7 @@ def nodes_macro(edges: List[Edge], start="N") -> List[str]:
         cur = e.end
     return out
 
-def nodes_expanded(edges: List[Edge], start="N") -> List[str]:
+def nodes_expanded(edges: List[Edge], start="BB") -> List[str]:
     out = [start]
     cur = start
     for e in edges:
