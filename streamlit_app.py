@@ -81,7 +81,7 @@ CORRIDORS: List[Edge] = [
     Edge("IF->H corridor", "IF", "H",  ("IF","TSC3","H")),
 
     Edge("A->D corridor", "A",  "D", ("A","TSC1","D")),
-    Edge("D->A corridor", "D", "A",  ("D","TSC3","A")),
+    Edge("D->A corridor", "D", "A",  ("D","TSC1","A")),
 ]
 
 # Simple edges (single hop only — IMPORTANT: no corridor-interior hops here)
@@ -99,8 +99,8 @@ SIMPLE_EDGES: List[Edge] = [
     Edge("WF->H",    "WF",   "H",    ("WF","H")),
     Edge("H->WF",    "H",    "WF",   ("H","WF")),
 
-    Edge("A->N",    "A",   "N",    ("WF","H")),
-    Edge("N->A",    "N",    "A",   ("H","WF")),
+    Edge("A->N",    "A",   "N",    ("A","N")),
+    Edge("N->A",    "N",    "A",   ("N","A")),
 
 ]
 
