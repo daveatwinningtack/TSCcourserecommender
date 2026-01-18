@@ -374,6 +374,23 @@ if st.button("Generate course"):
                 })
         st.dataframe(detail_rows, use_container_width=True)
 
+import streamlit as st
+import pandas as pd
+
+# Example mark / alias data
+data = [
+    {"Mark Name (Short)": "BB", "Mark Name (Long)": "Bill’s Buoy", "Aliases": "N, Start, Finish"},
+     {"Mark Name (Short)": "PNJ", "Mark Name (Long)": "Pete and Judy", "Aliases": "D"},
+     {"Mark Name (Short)": "WT", "Mark Name (Long)": "WinningTack", "Aliases": "WF"},
+     {"Mark Name (Short)": "WE", "Mark Name (Long)": "Witt's End", "Aliases": "IF"},
+     {"Mark Name (Short)": "CC", "Mark Name (Long)": "Carmen's Corner", "Aliases": "H"},
+     {"Mark Name (Short)": "TT", "Mark Name (Long)": "Tom's Turnaround", "Aliases": "A"},
+     {"Mark Name (Short)": "TSC1", "Mark Name (Long)": "TSC 1 Waypoint", "Aliases": "TSC1"},
+     {"Mark Name (Short)": "TSC3", "Mark Name (Long)": "TSC 3 Waypoint", "Aliases": "TSC3"},
+]
+
+df = pd.DataFrame(data)
+
 st.divider()
-with st.expander("Advanced settings"):
-    st.write("If you want these exposed in the UI, we can add sliders for target window, min/max edges, etc.")
+with st.expander("Mark Names and Aliases"):
+st.table(df)
