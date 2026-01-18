@@ -391,5 +391,5 @@ data = [
 
 df = pd.DataFrame(data)
 
-st.expander("Mark Names and Aliases"):
-st.table(df)
+with st.expander("Mark Names and Aliases"):
+    st.table(df)
