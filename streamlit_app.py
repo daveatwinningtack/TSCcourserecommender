@@ -254,18 +254,77 @@ st.set_page_config(page_title="TSC Course Generator", layout="centered")
 st.title("TSC Fixed-Marks Course Generator")
 st.caption("Inputs: wind direction (from) + wind speed. Output: recommended course under 3.5 hours, 2-2.5hour target (pursuit-friendly).")
 
-col1, col2, col3 = st.columns([1,1,1])
+col1, col2 = st.columns([1,1])
 with col1:
-    wind_from = st.number_input("Wind FROM (deg true)", min_value=0.0, max_value=359.9, value=200.0, step=1.0)
-with col2:
     wind_speed = st.number_input("Wind speed (kt)", min_value=0.0, max_value=60.0, value=15.0, step=0.5)
-with col3:
+with col2:
     top_n = st.number_input("Show top N", min_value=1, max_value=15, value=5, step=1)
+
+import streamlit as st
+
+# 16-point compass (you can expand to 32 if you want)
+COMPASS_TO_DEG = {
+    "N": 0.0, "NNE": 22.5, "NE": 45.0, "ENE": 67.5,
+    "E": 90.0, "ESE": 112.5, "SE": 135.0, "SSE": 157.5,
+    "S": 180.0, "SSW": 202.5, "SW": 225.0, "WSW": 247.5,
+    "W": 270.0, "WNW": 292.5, "NW": 315.0, "NNW": 337.5,
+}
+
+DEG_TO_COMPASS = {v: k for k, v in COMPASS_TO_DEG.items()}  # works since values are unique
+
+def normalize_deg(d: float) -> float:
+    # Keep it in [0, 360)
+    return float(d) % 360.0
+
+def nearest_compass_point(deg: float) -> str:
+    deg = normalize_deg(deg)
+    nearest = min(COMPASS_TO_DEG.items(), key=lambda kv: abs(kv[1] - deg) if abs(kv[1] - deg) <= 180 else 360 - abs(kv[1] - deg))
+    return nearest[0]
+
+# --- Initialize session state ---
+if "wind_deg" not in st.session_state:
+    st.session_state.wind_deg = 200.0  # default
+if "wind_dir" not in st.session_state:
+    st.session_state.wind_dir = nearest_compass_point(st.session_state.wind_deg)
+
+# --- Callbacks to keep the two inputs in sync ---
+def on_dir_change():
+    st.session_state.wind_deg = COMPASS_TO_DEG[st.session_state.wind_dir]
+
+def on_deg_change():
+    st.session_state.wind_deg = normalize_deg(st.session_state.wind_deg)
+    st.session_state.wind_dir = nearest_compass_point(st.session_state.wind_deg)
+
+# --- UI ---
+col1, col2 = st.columns([1, 1])
+
+with col1:
+    st.selectbox(
+        "Wind direction (compass)",
+        options=list(COMPASS_TO_DEG.keys()),
+        key="wind_dir",
+        on_change=on_dir_change,
+        help="Choose a compass direction to auto-fill degrees."
+    )
+
+with col2:
+    st.number_input(
+        "Wind direction (degrees)",
+        min_value=0.0,
+        max_value=359.9,
+        step=1.0,
+        key="wind_deg",
+        on_change=on_deg_change,
+        help="Enter a number (0–359.9). Updates the compass selection to the nearest point."
+    )
+
+wind_direction_degrees = st.session_state.wind_deg
+st.caption(f"Using wind direction: **{wind_direction_degrees:.1f}°** ({nearest_compass_point(wind_direction_degrees)})")
 
 show_legs = st.checkbox("Show expanded legs (details)", value=False)
 
 if st.button("Generate course"):
-    wind_from = float(wind_from) % 360.0
+    wind_from = float(wind_direction_degrees) % 360.0
     wind_speed = float(wind_speed)
 
     candidates = recommend_courses(wind_from, wind_speed, top_k=int(top_n))
