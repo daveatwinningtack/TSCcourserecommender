@@ -291,7 +291,7 @@ def on_deg_change():
     st.session_state.wind_dir = nearest_compass_point(st.session_state.wind_deg)
 
 # --- UI ---
-col1, col2, col3, col4 = st.columns([2, 2, 1, 1])
+col1, col2, col3, col4 = st.columns([1.5, 1.5, 1, 1])
 
 with col1:
     st.selectbox(
