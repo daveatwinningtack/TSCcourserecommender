@@ -14,6 +14,7 @@ MARKS: Dict[str, Tuple[float, float]] = {
     "IF":   (33 + 49.300/60.0, -(96 + 36.000/60.0)),  # Witt’s End
     "WF":   (33 + 54.723/60.0, -(96 + 35.790/60.0)),  # WinningTack
     "H":    (33 + 55.410/60.0, -(96 + 42.790/60.0)),  # Carmon’s Corner
+    "A":    (33 + 51.790/60.0, -(96 + 39.190/60.0)),  # Tom's Turnaround
 }
 
 EARTH_RADIUS_NM = 3440.065  # nautical miles
@@ -78,6 +79,9 @@ CORRIDORS: List[Edge] = [
     
     Edge("H->IF corridor", "H",  "IF", ("H","TSC3","IF")),
     Edge("IF->H corridor", "IF", "H",  ("IF","TSC3","H")),
+
+    Edge("A->D corridor", "A",  "D", ("A","TSC1","D")),
+    Edge("D->A corridor", "D", "A",  ("D","TSC3","A")),
 ]
 
 # Simple edges (single hop only — IMPORTANT: no corridor-interior hops here)
@@ -94,6 +98,9 @@ SIMPLE_EDGES: List[Edge] = [
 
     Edge("WF->H",    "WF",   "H",    ("WF","H")),
     Edge("H->WF",    "H",    "WF",   ("H","WF")),
+
+    Edge("A->N",    "A",   "N",    ("WF","H")),
+    Edge("N->A",    "N",    "A",   ("H","WF")),
 
 ]
 
