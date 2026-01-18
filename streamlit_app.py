@@ -391,6 +391,5 @@ data = [
 
 df = pd.DataFrame(data)
 
-st.divider()
-with st.expander("Mark Names and Aliases"):
+st.expander("Mark Names and Aliases"):
 st.table(df)
