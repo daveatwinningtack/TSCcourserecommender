@@ -295,8 +295,7 @@ col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
 
 with col1:
     st.selectbox(
-        "Wind direction
-        (compass)",
+        "Wind direction\n(compass)",
         options=list(COMPASS_TO_DEG.keys()),
         key="wind_dir",
         on_change=on_dir_change,
@@ -305,8 +304,7 @@ with col1:
 
 with col2:
     st.number_input(
-        "Wind direction
-        (degrees)",
+        "Wind direction\n(degrees)",
         min_value=0.0,
         max_value=359.9,
         step=1.0,
@@ -316,12 +314,10 @@ with col2:
     )
 
 with col3:
-    wind_speed = st.number_input("Wind speed
-    (kt)", min_value=0.0, max_value=60.0, value=15.0, step=0.5)
+    wind_speed = st.number_input("Wind speed\n(kt)", min_value=0.0, max_value=60.0, value=15.0, step=0.5)
 
 with col4:
-    top_n = st.number_input("Show top N
-    Courses", min_value=1, max_value=15, value=5, step=1)
+    top_n = st.number_input("Show top N\nCourses", min_value=1, max_value=15, value=5, step=1)
 
 wind_direction_degrees = st.session_state.wind_deg
 st.caption(f"Using wind direction: **{wind_direction_degrees:.1f}°** ({nearest_compass_point(wind_direction_degrees)})")
