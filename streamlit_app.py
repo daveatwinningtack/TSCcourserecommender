@@ -7,14 +7,14 @@ from typing import Dict, List, Tuple, Optional
 # MARKS (lat/lon in decimal degrees)
 # -----------------------------
 MARKS: Dict[str, Tuple[float, float]] = {
-    "N":    (33 + 51.700/60.0, -(96 + 38.630/60.0)),  # Bill's Buoy
+    "BB":    (33 + 51.700/60.0, -(96 + 38.630/60.0)),  # Bill's Buoy
     "TSC1": (33 + 52.070/60.0, -(96 + 37.900/60.0)),
     "TSC3": (33 + 53.790/60.0, -(96 + 37.780/60.0)),
-    "D":    (33 + 51.700/60.0, -(96 + 35.940/60.0)),  # Pete N Judi
-    "IF":   (33 + 49.300/60.0, -(96 + 36.000/60.0)),  # Witt’s End
-    "WF":   (33 + 54.723/60.0, -(96 + 35.790/60.0)),  # WinningTack
-    "H":    (33 + 55.410/60.0, -(96 + 42.790/60.0)),  # Carmon’s Corner
-    "A":    (33 + 51.790/60.0, -(96 + 39.190/60.0)),  # Tom's Turnaround
+    "PNJ":    (33 + 51.700/60.0, -(96 + 35.940/60.0)),  # Pete N Judi
+    "WE":   (33 + 49.300/60.0, -(96 + 36.000/60.0)),  # Witt’s End
+    "WT":   (33 + 54.723/60.0, -(96 + 35.790/60.0)),  # WinningTack
+    "CC":    (33 + 55.410/60.0, -(96 + 42.790/60.0)),  # Carmon’s Corner
+    "TT":    (33 + 51.790/60.0, -(96 + 39.190/60.0)),  # Tom's Turnaround
 }
 
 EARTH_RADIUS_NM = 3440.065  # nautical miles
@@ -62,45 +62,45 @@ def is_corridor(edge: Edge) -> bool:
 
 # Corridors (must sail as combined corridor)
 CORRIDORS: List[Edge] = [
-    Edge("H->N corridor",  "H",  "N",  ("H","TSC3","TSC1","N")),
-    Edge("N->H corridor",  "N",  "H",  ("N","TSC1","TSC3","H")),
+    Edge("CC->BB corridor",  "CC",  "BB",  ("CC","TSC3","TSC1","BB")),
+    Edge("BB->CC corridor",  "BB",  "CC",  ("BB","TSC1","TSC3","CC")),
     
-    Edge("D->H corridor",  "D",  "H",  ("D","TSC3","H")),
-    Edge("H->D corridor",  "H",  "D",  ("H","TSC3","D")),
+    Edge("PNJ->CC corridor",  "PNJ",  "CC",  ("PNJ","TSC3","CC")),
+    Edge("CC->PMJ corridor",  "CC",  "PNJ",  ("CC","TSC3","PNJ")),
     
-    Edge("D->N corridor",  "D",  "N",  ("D","TSC1","N")),
-    Edge("N->D corridor",  "N",  "D",  ("N","TSC1","D")),
+    Edge("PNJ->BB corridor",  "PNJ",  "BB",  ("PNJ","TSC1","BB")),
+    Edge("BB->PNJ corridor",  "BB",  "PNJ",  ("BB","TSC1","PNJ")),
     
-    Edge("WF->N corridor",  "WF",  "N",  ("WF","TSC1","N")),
-    Edge("N->WF corridor",  "N",  "WF",  ("N","TSC1","WF")),
+    Edge("WT->BB corridor",  "WT",  "BB",  ("WT","TSC1","BB")),
+    Edge("BB->WT corridor",  "BB",  "WT",  ("BB","TSC1","WT")),
     
-    Edge("IF->N corridor",  "IF",  "N",  ("IF","TSC1","N")),
-    Edge("N->IF corridor",  "N",  "IF",  ("N","TSC1","IF")),
+    Edge("WE->BB corridor",  "WE",  "BB",  ("WE","TSC1","BB")),
+    Edge("BB->WE corridor",  "BB",  "WE",  ("BB","TSC1","WE")),
     
-    Edge("H->IF corridor", "H",  "IF", ("H","TSC3","IF")),
-    Edge("IF->H corridor", "IF", "H",  ("IF","TSC3","H")),
+    Edge("CC->WE corridor", "CC",  "WE", ("CC","TSC3","WE")),
+    Edge("WE->CC corridor", "WE", "CC",  ("WE","TSC3","CC")),
 
-    Edge("A->D corridor", "A",  "D", ("A","TSC1","D")),
-    Edge("D->A corridor", "D", "A",  ("D","TSC1","A")),
+    Edge("TT->PNJ corridor", "TT",  "PNJ", ("TT","TSC1","PNJ")),
+    Edge("PNJ->TT corridor", "PNJ", "TT",  ("PNJ","TSC1","TT")),
 ]
 
 # Simple edges (single hop only — IMPORTANT: no corridor-interior hops here)
 SIMPLE_EDGES: List[Edge] = [
 
-    Edge("IF->D",    "IF",   "D",    ("IF","D")),
-    Edge("D->IF",    "D",    "IF",   ("D","IF")),
+    Edge("WE->PNJ",    "WE",   "PNJ",    ("WE","PNJ")),
+    Edge("PNJ->WE",    "PNJ",    "WE",   ("PNJ","WE")),
 
-    Edge("D->WF",    "D",    "WF",   ("D","WF")),
-    Edge("WF->D",    "WF",   "D",    ("WF","D")),
+    Edge("PNJ->WT",    "PNJ",    "WT",   ("PNJ","WT")),
+    Edge("WT->PNJ",    "WT",   "PNJ",    ("WT","PNJ")),
 
-    Edge("IF->WF",   "IF",   "WF",   ("IF","WF")),
-    Edge("WF->IF",   "WF",   "IF",   ("WF","IF")),
+    Edge("WE->WT",   "WE",   "WT",   ("WE","WT")),
+    Edge("WT->WE",   "WT",   "WE",   ("WT","WE")),
 
-    Edge("WF->H",    "WF",   "H",    ("WF","H")),
-    Edge("H->WF",    "H",    "WF",   ("H","WF")),
+    Edge("WT->CC",    "WT",   "CC",    ("WT","CC")),
+    Edge("CC->WT",    "CC",    "WT",   ("CC","WT")),
 
-    Edge("A->N",    "A",   "N",    ("A","N")),
-    Edge("N->A",    "N",    "A",   ("N","A")),
+    Edge("TT->BB",    "TT",   "BB",    ("TT","BB")),
+    Edge("BB->TT",    "BB",    "TT",   ("BB","TT")),
 
 ]
 
