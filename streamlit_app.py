@@ -222,9 +222,11 @@ class Candidate:
     total_dist: float
     score: float
 
-def edge_score(edge: Edge, wind_from_deg: float, wind_speed_kt: float, prev_edge: Optional[Edge]) -> float:
+def edge_score(edge: Edge, wind_from_deg: float, wind_speed_kt: float, 
+    prev_edge: Optional[Edge]) -> float:
     dist, t, legs = edge_time(edge, wind_from_deg, wind_speed_kt)
     score = 0.0
+    
     for (_, _, d, _, ltype, _, _) in legs:
         if wind_speed_kt >= 8.0:
             if "UPWIND" in ltype or "DOWNWIND" in ltype:
@@ -238,17 +240,22 @@ def edge_score(edge: Edge, wind_from_deg: float, wind_speed_kt: float, prev_edge
                 score += 0.6 * d
             else:
                 score -= 1.2 * d
+    
     if dist < 0.6:
         score -= 3.0
+    
     if prev_edge is not None:
         if prev_edge.start == edge.end and prev_edge.end == edge.start:
             score -= 6.0
         if prev_edge.end == edge.end:
             score -= 2.0
+    
     if is_corridor(edge):
         score -= 0.8
+    
     if t > 1.2:
         score -= (t - 1.2) * 2.0
+    
     return score
 
 def recommend_courses(
