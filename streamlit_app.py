@@ -79,18 +79,12 @@ def vmg_downwind_speed(tws_kt: float) -> Tuple[float, float]:
 
 # Effective VMG speed along the rhumb line for a given bearing vs wind
 def effective_speed_on_bearing(bearing_deg: float, wind_from_deg: float, tws_kt: float) -> Tuple[str, float]:
-    """
-    Given a course bearing and the wind-from direction, compute effective
-    boat speed along that bearing using the polar (with VMG tacking/gybing
-    for pure upwind/downwind).
-    """
-    wind_to = (wind_from_deg + 180.0) % 360.0          # direction wind blows toward
-    twa = smallest_angle_deg(bearing_deg - wind_to)     # 0 = dead downwind, 180 = dead upwind
+    wind_to = (wind_from_deg + 180.0) % 360.0
+    twa = smallest_angle_deg(bearing_deg - wind_to)   # 0 = dead downwind, 180 = dead upwind
 
-    # Dead upwind (close-hauled tacking region, < best upwind TWA)
     _, best_up_twa = vmg_upwind_speed(tws_kt)
     _, best_dn_twa = vmg_downwind_speed(tws_kt)
-    # Treat < best_up_twa as tacking, > best_dn_twa as gybing
+
     if twa > 180.0 - best_up_twa:       # upwind cone
         _, vmg = vmg_upwind_speed(tws_kt)
         return "UPWIND (VMG)", max(0.5, vmg)
@@ -98,8 +92,8 @@ def effective_speed_on_bearing(bearing_deg: float, wind_from_deg: float, tws_kt:
         _, vmg = vmg_downwind_speed(tws_kt)
         return "DOWNWIND (VMG)", max(0.5, vmg)
 
-    # Otherwise: direct polar speed
-    bs = polar_boatspeed(twa, tws_kt)
+    # *** FIX: convert to standard polar convention (0=upwind, 180=downwind) ***
+    bs = polar_boatspeed(180.0 - twa, tws_kt)
     if twa > 120:
         label = "UPWIND-ish"
     elif twa < 60:
@@ -366,7 +360,11 @@ if st.button("Generate course"):
              "Time (hr)": round(c.total_time,2),
              "Dist (nm)": round(c.total_dist,2)}
             for c in candidates[1:int(top_n)]]
-    st.dataframe(rows, use_container_width=True) if rows else st.write("No alternates.")
+
+if rows:
+    st.dataframe(rows, use_container_width=True)
+else:
+    st.write("No alternates.")
 
     if show_legs:
         st.subheader("Leg details (recommended)")
