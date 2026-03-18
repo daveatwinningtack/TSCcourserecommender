@@ -360,11 +360,10 @@ if st.button("Generate course"):
              "Time (hr)": round(c.total_time,2),
              "Dist (nm)": round(c.total_dist,2)}
             for c in candidates[1:int(top_n)]]
-
-if rows:
-    st.dataframe(rows, use_container_width=True)
-else:
-    st.write("No alternates.")
+    if rows:
+        st.dataframe(rows, use_container_width=True)
+    else:
+        st.write("No alternates.")
 
     if show_legs:
         st.subheader("Leg details (recommended)")
