@@ -82,8 +82,8 @@ def effective_speed_on_bearing(bearing_deg: float, wind_from_deg: float, tws_kt:
     wind_to = (wind_from_deg + 180.0) % 360.0
     twa = smallest_angle_deg(bearing_deg - wind_to)   # 0 = dead downwind, 180 = dead upwind
 
-    _, best_up_twa = vmg_upwind_speed(tws_kt)
-    _, best_dn_twa = vmg_downwind_speed(tws_kt)
+    best_up_twa, _ = vmg_upwind_speed(tws_kt)
+    best_dn_twa, _ = vmg_downwind_speed(tws_kt)
 
     if twa > 180.0 - best_up_twa:       # upwind cone
         _, vmg = vmg_upwind_speed(tws_kt)
