@@ -235,8 +235,6 @@ def edge_score(edge: Edge, wind_from_deg: float, wind_speed_kt: float, prev_edge
     if dist < 0.6:
         score -= 3.0
     if prev_edge is not None:
-        if prev_edge.start == edge.end and prev_edge.end == edge.start:
-            score -= 6.0
         if prev_edge.end == edge.end:
             score -= 2.0
     if is_corridor(edge):
