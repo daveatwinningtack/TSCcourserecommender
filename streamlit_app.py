@@ -241,8 +241,7 @@ def edge_score(edge: Edge, wind_from_deg: float, wind_speed_kt: float, prev_edge
             score -= 2.0
     if is_corridor(edge):
         score -= 0.8
-    if t > 1.2:
-        score -= (t - 1.2) * 2.0
+    # REMOVED: per-edge time penalty — overall course time is handled by target_window bonus
     return score
 
 def recommend_courses(
