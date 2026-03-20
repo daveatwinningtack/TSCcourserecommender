@@ -24,6 +24,14 @@ _POLAR_SPEED = [
     [3.96, 5.01, 5.88, 6.51, 6.90, 7.20, 7.68],  # 150°
 ]
 
+# Beat/Run VMG tables — taken directly from Catalina 36 ORC polar output.
+# These give the true optimal upwind/downwind angles and VMG speeds,
+# avoiding clamping errors from scanning below the polar's minimum TWA (52°).
+_BEAT_ANGLES = [44.8, 43.0, 41.8, 41.4, 41.4, 41.1, 41.1]  # TWA (deg) at TWS 6–20
+_BEAT_VMG    = [3.11, 3.76, 4.21, 4.51, 4.66, 4.75, 4.79]  # VMG (kt)
+_RUN_ANGLES  = [145.7, 147.3, 146.9, 147.8, 149.6, 173.0, 176.3]  # TWA (deg)
+_RUN_VMG     = [3.43, 4.34, 5.09, 5.63, 5.98, 6.45, 7.18]  # VMG (kt)
+
 def _interp1(xs: list, ys: list, x: float) -> float:
     """Linear interpolation; clamps to endpoints."""
     if x <= xs[0]:  return ys[0]
@@ -51,30 +59,16 @@ def polar_boatspeed(twa_deg: float, tws_kt: float) -> float:
     return spd_lo + t * (spd_hi - spd_lo)
 
 def vmg_upwind_speed(tws_kt: float) -> Tuple[float, float]:
-    """
-    Scan TWA 30–60° and return (best_twa, VMG_component) for upwind.
-    VMG_upwind = boatspeed * cos(twa)  (component toward wind).
-    """
-    best_vmg, best_twa = 0.0, 52.0
-    for twa in range(30, 61):
-        bs = polar_boatspeed(twa, tws_kt)
-        vmg = bs * cos(radians(twa))
-        if vmg > best_vmg:
-            best_vmg, best_twa = vmg, float(twa)
-    return best_twa, best_vmg
+    """Return (best_twa, best_VMG_kt) for upwind from polar Beat table."""
+    twa = _interp1(_POLAR_TWS, _BEAT_ANGLES, tws_kt)
+    vmg = _interp1(_POLAR_TWS, _BEAT_VMG,    tws_kt)
+    return twa, vmg
 
 def vmg_downwind_speed(tws_kt: float) -> Tuple[float, float]:
-    """
-    Scan TWA 120–160° and return (best_twa, VMG_component) for downwind.
-    VMG_downwind = boatspeed * cos(180° - twa).
-    """
-    best_vmg, best_twa = 0.0, 150.0
-    for twa in range(120, 161):
-        bs = polar_boatspeed(twa, tws_kt)
-        vmg = bs * cos(radians(180 - twa))
-        if vmg > best_vmg:
-            best_vmg, best_twa = vmg, float(twa)
-    return best_twa, best_vmg
+    """Return (best_twa, best_VMG_kt) for downwind from polar Run table."""
+    twa = _interp1(_POLAR_TWS, _RUN_ANGLES, tws_kt)
+    vmg = _interp1(_POLAR_TWS, _RUN_VMG,    tws_kt)
+    return twa, vmg
 
 def smallest_angle_deg(x: float) -> float:
     return abs((x + 180.0) % 360.0 - 180.0)
