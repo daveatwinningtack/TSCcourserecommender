@@ -262,7 +262,7 @@ def recommend_courses(
             consider(Candidate(list(edges), t_hr, d_nm, score + bonus))
         prev = edges[-1] if edges else None
         for e in ADJ.get(current, []):
-            if len(edges) < 2 and e.end == "BB": continue
+            if len(edges) < 1 and e.end == "BB": continue
             edist, etime, _ = edge_time(e, wind_from_deg, wind_speed_kt)
             escore = edge_score(e, wind_from_deg, wind_speed_kt, prev)
             dfs(e.end, edges+[e], t_hr+etime, d_nm+edist, score+escore)
