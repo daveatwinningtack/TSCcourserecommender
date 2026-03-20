@@ -6,24 +6,25 @@ from typing import Dict, List, Tuple, Optional
 import bisect
 
 # -----------------------------
-# J/105 POLAR TABLE
+# CATALINA 36 POLAR TABLE
+# Representative of TSC fleet (avg PHRF ~150)
 # Rows: TWA (degrees), Cols: wind speed (knots) → boat speed (knots)
 # -----------------------------
 _POLAR_TWA   = [52, 60, 75, 90, 110, 120, 135, 150]
 _POLAR_TWS   = [6, 8, 10, 12, 14, 16, 20]
 _POLAR_SPEED = [
     # TWS:   6     8     10    12    14    16    20
-    [5.09, 6.06, 6.82, 7.18, 7.37, 7.50, 7.65],  # 52°
-    [5.42, 6.38, 7.10, 7.48, 7.66, 7.82, 8.00],  # 60°
-    [5.65, 6.64, 7.29, 7.74, 8.06, 8.25, 8.45],  # 75°
-    [5.92, 7.04, 7.56, 7.76, 8.06, 8.30, 8.50],  # 90°
-    [5.81, 6.98, 7.76, 8.35, 8.71, 9.00, 9.50],  # 110°
-    [5.67, 6.87, 7.58, 8.12, 8.66, 9.00, 9.50],  # 120°
-    [4.98, 6.09, 7.03, 7.62, 8.13, 8.60, 9.10],  # 135°
-    [3.96, 5.14, 6.06, 6.87, 7.45, 8.00, 8.80],  # 150°
+    [4.81, 5.67, 6.27, 6.63, 6.83, 6.93, 7.00],  # 52°
+    [5.10, 5.94, 6.50, 6.84, 7.04, 7.16, 7.25],  # 60°
+    [5.28, 6.14, 6.69, 7.02, 7.24, 7.41, 7.61],  # 75°
+    [5.20, 6.15, 6.81, 7.17, 7.37, 7.51, 7.84],  # 90°
+    [5.28, 6.34, 6.98, 7.37, 7.67, 7.93, 8.30],  # 110°
+    [5.13, 6.22, 6.92, 7.34, 7.67, 7.98, 8.54],  # 120°
+    [4.64, 5.75, 6.60, 7.11, 7.48, 7.80, 8.41],  # 135°
+    [3.96, 5.01, 5.88, 6.51, 6.90, 7.20, 7.68],  # 150°
 ]
 
-_interp1(xs: list, ys: list, x: float) -> float:
+def _interp1(xs: list, ys: list, x: float) -> float:
     """Linear interpolation; clamps to endpoints."""
     if x <= xs[0]:  return ys[0]
     if x >= xs[-1]: return ys[-1]
@@ -33,19 +34,16 @@ _interp1(xs: list, ys: list, x: float) -> float:
 
 def polar_boatspeed(twa_deg: float, tws_kt: float) -> float:
     """
-    Bilinear interpolation into J/105 polar.
-    twa_deg: True Wind Angle, 0–180° (absolute, so symmetric port/stbd).
+    Bilinear interpolation into Catalina 36 polar.
+    twa_deg: True Wind Angle, 0–180° (absolute, symmetric port/stbd).
     tws_kt: True Wind Speed in knots.
     """
     twa = abs(twa_deg)
     twa = min(max(twa, _POLAR_TWA[0]), _POLAR_TWA[-1])
-
-    # Interpolate each TWA row over wind speed, then interpolate over TWA
     if twa <= _POLAR_TWA[0]:
         return _interp1(_POLAR_TWS, _POLAR_SPEED[0], tws_kt)
     if twa >= _POLAR_TWA[-1]:
         return _interp1(_POLAR_TWS, _POLAR_SPEED[-1], tws_kt)
-
     i = bisect.bisect_right(_POLAR_TWA, twa) - 1
     spd_lo = _interp1(_POLAR_TWS, _POLAR_SPEED[i],   tws_kt)
     spd_hi = _interp1(_POLAR_TWS, _POLAR_SPEED[i+1], tws_kt)
@@ -78,7 +76,9 @@ def vmg_downwind_speed(tws_kt: float) -> Tuple[float, float]:
             best_vmg, best_twa = vmg, float(twa)
     return best_twa, best_vmg
 
-# Effective VMG speed along the rhumb line for a given bearing vs wind
+def smallest_angle_deg(x: float) -> float:
+    return abs((x + 180.0) % 360.0 - 180.0)
+
 def effective_speed_on_bearing(bearing_deg: float, wind_from_deg: float, tws_kt: float) -> Tuple[str, float]:
     wind_to = (wind_from_deg + 180.0) % 360.0
     twa = smallest_angle_deg(bearing_deg - wind_to)   # 0 = dead downwind, 180 = dead upwind
@@ -86,14 +86,14 @@ def effective_speed_on_bearing(bearing_deg: float, wind_from_deg: float, tws_kt:
     best_up_twa, _ = vmg_upwind_speed(tws_kt)
     best_dn_twa, _ = vmg_downwind_speed(tws_kt)
 
-    if twa > 180.0 - best_up_twa:       # upwind cone
+    if twa > 180.0 - best_up_twa:        # upwind cone
         _, vmg = vmg_upwind_speed(tws_kt)
         return "UPWIND (VMG)", max(0.5, vmg)
-    if twa < 180.0 - best_dn_twa:       # downwind cone
+    if twa < 180.0 - best_dn_twa:        # downwind cone
         _, vmg = vmg_downwind_speed(tws_kt)
         return "DOWNWIND (VMG)", max(0.5, vmg)
 
-    # *** FIX: convert to standard polar convention (0=upwind, 180=downwind) ***
+    # Reach — use polar boatspeed at actual TWA
     bs = polar_boatspeed(180.0 - twa, tws_kt)
     if twa > 120:
         label = "UPWIND-ish"
@@ -102,10 +102,6 @@ def effective_speed_on_bearing(bearing_deg: float, wind_from_deg: float, tws_kt:
     else:
         label = "REACH"
     return label, max(0.5, bs)
-
-# Alias used by edge_score
-def leg_type_and_speed(bearing_deg, wind_from_deg, wind_speed_kt):
-    return effective_speed_on_bearing(bearing_deg, wind_from_deg, wind_speed_kt)
 
 # -----------------------------
 # MARKS (lat/lon in decimal degrees)
@@ -139,9 +135,6 @@ def initial_bearing_deg(a: str, b: str) -> float:
     x = sin(dlam)*cos(phi2)
     y = cos(phi1)*sin(phi2) - sin(phi1)*cos(phi2)*cos(dlam)
     return (degrees(atan2(x, y)) + 360.0) % 360.0
-
-def smallest_angle_deg(x: float) -> float:
-    return abs((x + 180.0) % 360.0 - 180.0)
 
 # -----------------------------
 # COURSE GRAPH
@@ -217,30 +210,33 @@ class Candidate:
     total_dist: float
     score: float
 
-def edge_score(edge: Edge, wind_from_deg: float, wind_speed_kt: float, prev_edge: Optional[Edge]) -> float:
+def edge_score(edge: Edge, wind_from_deg: float, wind_speed_kt: float,
+               prev_edge: Optional[Edge]) -> float:
     dist, t, legs = edge_time(edge, wind_from_deg, wind_speed_kt)
     score = 0.0
+
     for (_, _, d, _, ltype, _, _) in legs:
         if wind_speed_kt >= 8.0:
             if "UPWIND" in ltype or "DOWNWIND" in ltype:
                 score += 2.0 * d
-            else:
-                score -= 1.2 * d
+            # REACH is neutral — no bonus, no penalty
         else:
             if ltype == "REACH":
                 score += 2.0 * d
             elif "DOWNWIND" in ltype:
                 score += 0.6 * d
-            else:
-                score -= 1.2 * d
+            # light-air upwind is neutral
+
     if dist < 0.6:
         score -= 3.0
+
     if prev_edge is not None:
         if prev_edge.end == edge.end:
             score -= 2.0
+
     if is_corridor(edge):
         score -= 0.8
-    # REMOVED: per-edge time penalty — overall course time is handled by target_window bonus
+
     return score
 
 def recommend_courses(
@@ -298,7 +294,7 @@ def nearest_compass(deg):
 
 st.set_page_config(page_title="TSC Course Generator", layout="centered")
 st.title("TSC Fixed-Marks Course Generator")
-st.caption("J/105 polar-based speed model · start/finish BB · target 2–2.5 hr")
+st.caption("Catalina 36 polar model · representative of TSC fleet · start/finish BB · target 2–2.5 hr")
 
 if "wind_deg" not in st.session_state: st.session_state.wind_deg = 200.0
 if "wind_dir" not in st.session_state: st.session_state.wind_dir = nearest_compass(200.0)
@@ -323,7 +319,7 @@ st.caption(f"Wind: **{wd:.1f}°** ({nearest_compass(wd)})")
 show_legs = st.checkbox("Show expanded legs", value=False)
 
 # Polar preview
-with st.expander("J/105 Polar preview"):
+with st.expander("Catalina 36 Polar preview"):
     tws_preview = st.slider("Preview TWS (kt)", 4, 20, 12)
     twa_range = list(range(30, 181, 5))
     polar_preview = pd.DataFrame({
@@ -333,7 +329,10 @@ with st.expander("J/105 Polar preview"):
     st.line_chart(polar_preview.set_index("TWA"))
     up_twa, up_vmg = vmg_upwind_speed(tws_preview)
     dn_twa, dn_vmg = vmg_downwind_speed(tws_preview)
-    st.caption(f"Best upwind VMG: {up_vmg:.2f} kt @ TWA {up_twa:.0f}°  |  Best downwind VMG: {dn_vmg:.2f} kt @ TWA {dn_twa:.0f}°")
+    st.caption(
+        f"Best upwind VMG: {up_vmg:.2f} kt @ TWA {up_twa:.0f}°  |  "
+        f"Best downwind VMG: {dn_vmg:.2f} kt @ TWA {dn_twa:.0f}°"
+    )
 
 if st.button("Generate course"):
     wind_from = float(wd) % 360.0
@@ -355,8 +354,8 @@ if st.button("Generate course"):
     st.subheader("Alternates")
     rows = [{"Macro": "–".join(nodes_macro(c.edges)),
              "Expanded": "–".join(nodes_expanded(c.edges)),
-             "Time (hr)": round(c.total_time,2),
-             "Dist (nm)": round(c.total_dist,2)}
+             "Time (hr)": round(c.total_time, 2),
+             "Dist (nm)": round(c.total_dist, 2)}
             for c in candidates[1:int(top_n)]]
     if rows:
         st.dataframe(rows, use_container_width=True)
@@ -369,22 +368,23 @@ if st.button("Generate course"):
         for e in best.edges:
             _, _, legs = edge_time(e, wind_from, float(wind_speed))
             for (a, b, dist, brg, ltype, spd, t) in legs:
-                detail_rows.append({"Edge": e.name, "From": a, "To": b,
-                                    "Dist (nm)": round(dist,2), "Bearing": round(brg,1),
-                                    "Type": ltype, "Spd (kt)": round(spd,2), "Time (hr)": round(t,2)})
+                detail_rows.append({
+                    "Edge": e.name, "From": a, "To": b,
+                    "Dist (nm)": round(dist, 2), "Bearing": round(brg, 1),
+                    "Type": ltype, "Spd (kt)": round(spd, 2), "Time (hr)": round(t, 2)
+                })
         st.dataframe(detail_rows, use_container_width=True)
 
 # Mark reference
 MARK_DATA = [
-    {"Short": "BB",   "Long": "Bill's Buoy",       "Aliases": "N, Start, Finish"},
-    {"Short": "PNJ",  "Long": "Pete and Judy",      "Aliases": "D"},
-    {"Short": "WT",   "Long": "WinningTack",         "Aliases": "WF"},
-    {"Short": "WE",   "Long": "Witt's End",          "Aliases": "IF"},
-    {"Short": "CC",   "Long": "Carmen's Corner",     "Aliases": "H"},
-    {"Short": "TT",   "Long": "Tom's Turnaround",    "Aliases": "A"},
-    {"Short": "TSC1", "Long": "TSC 1 Waypoint",      "Aliases": "TSC1"},
-    {"Short": "TSC3", "Long": "TSC 3 Waypoint",      "Aliases": "TSC3"},
+    {"Short": "BB",   "Long": "Bill's Buoy",      "Aliases": "N, Start, Finish"},
+    {"Short": "PNJ",  "Long": "Pete and Judy",     "Aliases": "D"},
+    {"Short": "WT",   "Long": "WinningTack",        "Aliases": "WF"},
+    {"Short": "WE",   "Long": "Witt's End",         "Aliases": "IF"},
+    {"Short": "CC",   "Long": "Carmen's Corner",    "Aliases": "H"},
+    {"Short": "TT",   "Long": "Tom's Turnaround",   "Aliases": "A"},
+    {"Short": "TSC1", "Long": "TSC 1 Waypoint",     "Aliases": "TSC1"},
+    {"Short": "TSC3", "Long": "TSC 3 Waypoint",     "Aliases": "TSC3"},
 ]
 with st.expander("Mark names and aliases"):
     st.table(pd.DataFrame(MARK_DATA))
-
